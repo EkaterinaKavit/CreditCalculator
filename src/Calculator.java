@@ -34,6 +34,7 @@ public class Calculator {
 
 
     public static void main(String[] args) {
+        try{
         double sum_of_credit = 1000000; //сумма кредита
         int period_in_months = 12;  //период в месяцах
         double year_rate = 25.0; //годовая ставка
@@ -42,8 +43,19 @@ public class Calculator {
         int number_of_month = 6; //номер месяца взятия кредита
         int year =2025; // год взятия кредита
         LocalDate issue_date = LocalDate.of(year,number_of_month,day_of_month);
+
+        validateInputs(sum_of_credit,period_in_months,year_rate,day_of_month,type_of_credit,number_of_month,year);
+
         List<Payment> graph_for_printing= calculateGraph(sum_of_credit,period_in_months,year_rate,day_of_month,type_of_credit,issue_date);
-        printGraph(graph_for_printing);
+        printGraph(graph_for_printing);}
+
+        catch (IllegalArgumentException e){
+            System.err.println("Неправильные вводные данные"+e.getMessage());
+        }
+        catch (Exception e){
+            System.err.println("Непредвиденная ошибка"+e.getMessage());
+            e.printStackTrace();
+        }
 
     }
 
@@ -158,9 +170,39 @@ public class Calculator {
             }
             catch (Exception e){
                 System.err.println("Ошибка при обращении к isdayoff.ru: " + e.getMessage());
-                return false;
+                return HOLIDAYS.contains(date);
             }
         }
 
+    }
+
+    private static void validateInputs(double sum_of_credit,int period_in_months, double year_rate, int day_of_month,String type_of_credit, int number_of_month, int year){
+        if (sum_of_credit<=0){
+            throw new IllegalArgumentException("Сумма кредита должна быть положительной");
+        }
+        if (period_in_months<=0){
+            throw  new IllegalArgumentException("Срок кредита должен быть больше нуля");
+
+        }
+        if (year_rate<=0){
+            throw  new IllegalArgumentException("Процентная ставка должна быть положительной");
+        }
+        if (day_of_month<1||day_of_month>31){
+            throw  new IllegalArgumentException("В месяце должно быть от 1 до 31 дней");
+        }
+
+        if (type_of_credit.equalsIgnoreCase("annuitet")&&(type_of_credit.equalsIgnoreCase("diff")){
+            throw new IllegalArgumentException("Неправильно указан тип кредита");
+        }
+        if (number_of_month < 1 || number_of_month > 12) {
+            throw new IllegalArgumentException("Месяц должен быть от 1 до 12");
+        }
+        if (year < 2000 || year > 2100) {
+            throw new IllegalArgumentException("Год должен быть в разумных пределах (2000-2100)");
+        }
+
+        int maxDay = YearMonth.of(year,number_of_month).lengthOfMonth();
+        if (day_of_month > maxDay) {
+            System.out.println("Внимание: день " + day_of_month + " больше, чем дней в месяце выдачи (" + maxDay + "). Будет использован " + maxDay + ".");}
     }
 }
