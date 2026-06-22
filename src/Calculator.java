@@ -7,6 +7,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Calculator {
 
@@ -34,27 +35,49 @@ public class Calculator {
 
 
     public static void main(String[] args) {
-        try{
-        double sum_of_credit = 1000000; //сумма кредита
-        int period_in_months = 12;  //период в месяцах
-        double year_rate = 25.0; //годовая ставка
-        int day_of_month = 2; //дата оплаты в месяце
-        String type_of_credit = "annuitet"; //or "diff"  тип платежа
-        int number_of_month = 6; //номер месяца взятия кредита
-        int year =2025; // год взятия кредита
-        LocalDate issue_date = LocalDate.of(year,number_of_month,day_of_month);
+        try(Scanner scanner = new Scanner(System.in)) {
+            boolean flag = true;
+            while (flag) {
+                System.out.println("========Кредитный калькулятор=========\n");
+                double sum_of_credit = readDouble(scanner, "Введите сумму кредита (в рублях): ");
+                int period_in_months = readInt(scanner, "Введите срок кредита (в месяцах): ");
+                double year_rate = readDouble(scanner, "Введите годовую процентную ставку (в %): ");
+                int day_of_month = readInt(scanner, "Введите день платежа (число месяца, 1-31): ");
+                String type_of_credit = readType(scanner, "Введите тип платежа (annuitet или diff): ");
+                int number_of_month = readInt(scanner, "Введите месяц выдачи кредита (1-12): ");
+                int year = readInt(scanner, "Введите год выдачи кредита: ");
 
-        validateInputs(sum_of_credit,period_in_months,year_rate,day_of_month,type_of_credit,number_of_month,year);
 
-        List<Payment> graph_for_printing= calculateGraph(sum_of_credit,period_in_months,year_rate,day_of_month,type_of_credit,issue_date);
-        printGraph(graph_for_printing);}
+                try {
+//                    double sum_of_credit = 1000000; //сумма кредита
+//                    int period_in_months = 12;  //период в месяцах
+//                    double year_rate = 25.0; //годовая ставка
+//                    int day_of_month = 2; //дата оплаты в месяце
+//                    String type_of_credit = "annuitet"; //or "diff"  тип платежа
+//                    int number_of_month = 6; //номер месяца взятия кредита
+//                    int year = 2025; // год взятия кредита
+                    LocalDate issue_date = LocalDate.of(year, number_of_month, day_of_month);
 
-        catch (IllegalArgumentException e){
-            System.err.println("Неправильные вводные данные"+e.getMessage());
-        }
-        catch (Exception e){
-            System.err.println("Непредвиденная ошибка"+e.getMessage());
-            e.printStackTrace();
+                    validateInputs(sum_of_credit, period_in_months, year_rate, day_of_month, type_of_credit, number_of_month, year);
+
+                    List<Payment> graph_for_printing = calculateGraph(sum_of_credit, period_in_months, year_rate, day_of_month, type_of_credit, issue_date);
+                    printGraph(graph_for_printing);
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Неправильные вводные данные" + e.getMessage());
+                } catch (Exception e) {
+                    System.err.println("Непредвиденная ошибка" + e.getMessage());
+                    e.printStackTrace();
+                }
+
+                System.out.print("\nХотите рассчитать ещё один кредит? (да/нет): ");
+                String answer = scanner.next().trim().toLowerCase();
+                if (!answer.equals("да") && !answer.equals("yes") && !answer.equals("y")) {
+                    flag = false;
+                }
+                scanner.nextLine(); // очистка буфера
+            }
+            System.out.println("Спасибо за использование калькулятора!");
+
         }
 
     }
@@ -191,7 +214,7 @@ public class Calculator {
             throw  new IllegalArgumentException("В месяце должно быть от 1 до 31 дней");
         }
 
-        if (type_of_credit.equalsIgnoreCase("annuitet")&&(type_of_credit.equalsIgnoreCase("diff")){
+        if (type_of_credit.equalsIgnoreCase("annuitet")&&type_of_credit.equalsIgnoreCase("diff")){
             throw new IllegalArgumentException("Неправильно указан тип кредита");
         }
         if (number_of_month < 1 || number_of_month > 12) {
@@ -204,5 +227,41 @@ public class Calculator {
         int maxDay = YearMonth.of(year,number_of_month).lengthOfMonth();
         if (day_of_month > maxDay) {
             System.out.println("Внимание: день " + day_of_month + " больше, чем дней в месяце выдачи (" + maxDay + "). Будет использован " + maxDay + ".");}
+    }
+
+    public static double readDouble(Scanner scanner, String phrase){
+        while (true){
+            System.out.println(phrase);
+            String input = scanner.nextLine().trim().replace(',','.');
+            try {
+                return Double.parseDouble(input);
+            }catch (NumberFormatException e){
+                System.err.println("Ошибка: введите число (например, 1000.5)");
+            }
+        }
+    }
+
+
+    private static int readInt(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.err.println("Ошибка: введите целое число");
+            }
+        }
+    }
+
+    private static String readType(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim().toLowerCase();
+            if (input.equals("annuitet") || input.equals("diff")) {
+                return input;
+            }
+            System.err.println("Ошибка: введите 'annuitet' или 'diff'");
+        }
     }
 }
